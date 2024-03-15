@@ -5,6 +5,7 @@ get_data <- function(catchment_no) {
                     paste(catchment_no, ".csv", sep = "")))
 
     data <- data.frame(
+        date = as.Date(raw$Month, raw$Day, raw$Year, format = "%m.%d.%Y"),
         precip = raw$"Forcing_Precipitation_mm.d",
         snowmelt = raw$"HBV_Snowmelt_mm.d",
         streamflow = raw$"Observed_Streamflow_mm.d"

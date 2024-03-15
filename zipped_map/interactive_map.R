@@ -31,7 +31,7 @@ load("./data/scores.Rda")
 load("./data/bad.Rda")
 load("./data/atlas.Rda")
 
-## get list of all catchment numbers I have data for
+## get list of all catchment numbers I have (good) data for
 ids <- scores$id
 
 ## pre-process data for mapping
@@ -66,11 +66,10 @@ for (j in seq_len(length(good_locs$index))) {
                 geom_line(linetype = "dashed", color = "#2200ff") +
                 xlim(0, max(30, nrow(data))) +
                 labs(title = paste("gridcode", i),
-                    subtitle = paste("kge :", round(scores[i, "kge"], digits = 4)))                         # nolint
+                    subtitle = paste("kge :", round(scores[scores$id == i, "kge"], digits = 4)))            # nolint
     kernels[[j]] <- plt
-    colors[j] <- map_to_colors(scores[i, "kge"])
+    colors[j] <- map_to_colors(scores[scores$id == i, "kge"])
 }
-
 
 print("building map (this may take ~5 minutes, just wait for the > to appear in the console)...")           # nolint
 ## build map
@@ -78,17 +77,17 @@ suppressMessages(
   map <- leaflet()    %>%
   addTiles()      %>%
   addCircleMarkers(data = good_locs,
-                radius = 1,
+                radius = 1.2,
                 group = "good",
                 color = colors,
                 opacity = 1) %>%
+  addPopupGraphs(kernels, group = "good", width = 300, height = 300) %>%                                    # nolint
   addCircleMarkers(data = bad_locs,
                 radius = 1,
                 group = "bad",
-                color = "#d50000dc",
-              opacity = 0.7,
-              popup = sapply(bad_locs$index, as.character)) %>%
-  addPopupGraphs(kernels, group = "good", width = 300, height = 300)
+                color = "#ff0000aa",
+                opacity = 1,
+                popup = sapply(bad_locs$index, as.character))
 )
 
 print("done building map. type 'map' in the console to view.")
