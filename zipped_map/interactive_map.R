@@ -1,3 +1,24 @@
+## library checks for running on new machines
+if (system.file(package = "leaflet") == "") {
+  install.packages("leaflet")
+}
+if (system.file(package = "leafpop") == "") {
+  install.packages("leafpop")
+}
+if (system.file(package = "here") == "") {
+  install.packages("here")
+}
+if (system.file(package = "stringr") == "") {
+  install.packages("stringr")
+}
+if (system.file(package = "ggplot2") == "") {
+  install.packages("ggplot2")
+}
+if (system.file(package = "sf") == "") {
+  install.packages("sf")
+}
+
+## load libraries (quietly)
 suppressMessages(require(leaflet))
 suppressMessages(require(leafpop))
 suppressMessages(require(here))
@@ -23,13 +44,13 @@ good_locs <- locs[!(locs$index %in% bad), ]
 
 ## set up kge color-scaling
 map_to_colors <- function(x) {
-  # Values less than -1 are assigned "red"
-  if (x < -1 || is.na(x)) {
+  # Values less than 0 are assigned "red"
+  if (x < 0 || is.na(x)) {
     return("ff0000")
   }
-  # Values between -1 and 1 are scaled linearly from red to green
-  green_component <- max(0, min(1, (x + 1) / 2))
-  return(rgb(min(1.2 - (green_component * 3 / 4), 1), green_component * 2 / 3, 0))                         # nolint
+  # Values between 0 and 1 are scaled linearly from red to green
+  green <- max(0, min(1, x / 2))
+  return(rgb((0.5 - green) * 8 / 5, green * 8 / 5, 0))                         # nolint
 }
 colors <- vector(mode = "character", length = nrow(good_locs))
 
@@ -54,19 +75,20 @@ for (j in seq_len(length(good_locs$index))) {
 print("building map (this may take ~5 minutes, just wait for the > to appear in the console)...")           # nolint
 ## build map
 suppressMessages(
-    map <- leaflet()    %>%
-    addTiles()      %>%
-    addCircleMarkers(data = good_locs,
-                  radius = 1,
-                  group = "good",
-                  color = colors,
-                  opacity = 1) %>%
-    addCircleMarkers(data = bad_locs,
-                 radius = 1,
-                 group = "bad",
-                 color = "#323232b7",
-                opacity = 0.2,
-                popup = sapply(bad_locs$index, as.character)) %>%
-    addPopupGraphs(kernels, group = "good", width = 300, height = 300))
+  map <- leaflet()    %>%
+  addTiles()      %>%
+  addCircleMarkers(data = good_locs,
+                radius = 1,
+                group = "good",
+                color = colors,
+                opacity = 1) %>%
+  addCircleMarkers(data = bad_locs,
+                radius = 1,
+                group = "bad",
+                color = "#323232b7",
+              opacity = 0.2,
+              popup = sapply(bad_locs$index, as.character)) %>%
+  addPopupGraphs(kernels, group = "good", width = 300, height = 300)
+)
 
 print("done building map. type 'map' in the console to view.")
