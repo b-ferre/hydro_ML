@@ -1,9 +1,9 @@
-require(leaflet)
-require(leafpop)
-require(here)
-require(stringr)
-require(ggplot2)
-require(sf)
+suppressMessages(require(leaflet))
+suppressMessages(require(leafpop))
+suppressMessages(require(here))
+suppressMessages(require(stringr))
+suppressMessages(require(ggplot2))
+suppressMessages(require(sf))
 
 ## load data
 load("./data/scores.Rda")
@@ -22,16 +22,23 @@ bad_locs <- locs[locs$index %in% bad, ]
 good_locs <- locs[!(locs$index %in% bad), ]
 
 ## set up kge color-scaling
-ii <- cut(scores[!(scores$id %in% bad), "kge"],
-          breaks = seq(-1, 1, len = nrow(good_locs)),
-          include.lowest = TRUE)
-## Use bin indices, ii, to select color from vector of n-1 equally spaced colors
-colors <- colorRampPalette(c("Red", "Green"), bias = 5)(nrow(good_locs))[ii]
+map_to_colors <- function(x) {
+  # Values less than -1 are assigned "red"
+  if (x < -1 || is.na(x)) {
+    return("ff0000")
+  }
+  # Values between -1 and 1 are scaled linearly from red to green
+  green_component <- max(0, min(1, (x + 1) / 2))
+  return(rgb(min(1.2 - (green_component * 3 / 4), 1), green_component * 2 / 3, 0))                         # nolint
+}
+colors <- vector(mode = "character", length = nrow(good_locs))
 
 ## build kernel graphs for good catchments
+print("plotting kernels...")
 kernels <- list()
-for (i in good_locs$index) {
-    data <- data.frame(sapply(read.csv(paste("./data/kernels/", i, ".csv", sep = "")), as.numeric))      # nolint
+for (j in seq_len(length(good_locs$index))) {
+    i <- good_locs$index[j]
+    data <- data.frame(sapply(read.csv(paste("./data/kernels/", i, ".csv", sep = "")), as.numeric))         # nolint
     colnames(data) <- c("lag", "IRF_coeff")
     plt <- ggplot(data = data, aes(x = lag, y = IRF_coeff)) +
                 geom_point() +
@@ -39,23 +46,27 @@ for (i in good_locs$index) {
                 xlim(0, max(30, nrow(data))) +
                 labs(title = paste("gridcode", i),
                     subtitle = paste("kge :", round(scores[i, "kge"], digits = 4)))                         # nolint
-    kernels[[length(kernels) + 1]] <- plt
+    kernels[[j]] <- plt
+    colors[j] <- map_to_colors(scores[i, "kge"])
 }
 
+
+print("building map (this may take ~5 minutes, just wait for the > to appear in the console)...")           # nolint
 ## build map
-map <- leaflet()    %>%
+suppressMessages(
+    map <- leaflet()    %>%
     addTiles()      %>%
-    addCircleMarkers(data = good_locs[0:100, ],
+    addCircleMarkers(data = good_locs,
                   radius = 1,
                   group = "good",
-                  color = colors[0:100],
+                  color = colors,
                   opacity = 1) %>%
     addCircleMarkers(data = bad_locs,
-                 radius = 0.5,
+                 radius = 1,
                  group = "bad",
                  color = "#323232b7",
                 opacity = 0.2,
                 popup = sapply(bad_locs$index, as.character)) %>%
-    addPopupGraphs(kernels[0:100], group = "good", width = 300, height = 300)
+    addPopupGraphs(kernels, group = "good", width = 300, height = 300))
 
-map
+print("done building map. type 'map' in the console to view.")
