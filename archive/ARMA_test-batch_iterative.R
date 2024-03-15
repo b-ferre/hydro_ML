@@ -6,7 +6,7 @@ library(stringr, include.only = "str_replace_all")
 library(hydroGOF)
 library(readr)
 
-source(here("kirschner_ar_stuff", "irfnnhs.r"))
+source(here("kirschner_ar_model", "irfnnhs.r"))
 
 ## ----load catchment data in easy-to-iterate form------------------------------
 to_test <- str_replace_all(list.files(path = here(".", "data", "raw_data"),                                                         # nolint

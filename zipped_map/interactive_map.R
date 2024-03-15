@@ -85,8 +85,8 @@ suppressMessages(
   addCircleMarkers(data = bad_locs,
                 radius = 1,
                 group = "bad",
-                color = "#323232b7",
-              opacity = 0.2,
+                color = "#d50000dc",
+              opacity = 0.7,
               popup = sapply(bad_locs$index, as.character)) %>%
   addPopupGraphs(kernels, group = "good", width = 300, height = 300)
 )

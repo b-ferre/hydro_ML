@@ -45,6 +45,10 @@ find_max_practical_lag <- function(catchment_no,
     return(max_practical_lag)
 }
 
+get_max_practical_lag <- function(catchment_no) {
+    load("./data/results/arma_model/max_FD_lags.Rda")
+    return(max_practical_lags[max_practical_lags$catchment_no == catchment_no, "max_practical_lag"])                                    # nolint
+}
 
 get_learnability <- function(catchment_no) {
     ## perfect score (1.0) means that every single day in the time series has
@@ -60,7 +64,7 @@ get_learnability <- function(catchment_no) {
 
 
 ## return an IRF model trained on the entire dataset for catchment number i
-IRF_i <- function(catchment_no, FD = FALSE, h = NULL, lag = 100) {
+irf_i <- function(catchment_no, FD = FALSE, h = NULL, lag = 100) {
     data <- get_data(catchment_no)
     mod <- IRF(data$streamflow, data$precip, FD = FD, h = NULL, m = lag, complete = FALSE)
 
