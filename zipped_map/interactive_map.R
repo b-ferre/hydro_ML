@@ -1,9 +1,9 @@
-library(leaflet)
-library(leafpop)
-library(here)
-library(stringr)
-library(ggplot2)
-library(sf)
+require(leaflet)
+require(leafpop)
+require(here)
+require(stringr)
+require(ggplot2)
+require(sf)
 
 ## load data
 load("./data/scores.Rda")
@@ -22,39 +22,40 @@ bad_locs <- locs[locs$index %in% bad, ]
 good_locs <- locs[!(locs$index %in% bad), ]
 
 ## set up kge color-scaling
-dryness_pallete <- colorNumeric(palette = "plasma", domain = scores$kge)
-
+ii <- cut(scores[!(scores$id %in% bad), "kge"],
+          breaks = seq(-1, 1, len = nrow(good_locs)),
+          include.lowest = TRUE)
+## Use bin indices, ii, to select color from vector of n-1 equally spaced colors
+colors <- colorRampPalette(c("Red", "Green"), bias = 5)(nrow(good_locs))[ii]
 
 ## build kernel graphs for good catchments
 kernels <- list()
-for (i in seq_len(nrow(good_locs))) {
-    data <- data.frame(sapply(read.csv(paste("./FD_kernels/", good_locs$index[i], ".csv", sep = "")), as.numeric))      # nolint
+for (i in good_locs$index) {
+    data <- data.frame(sapply(read.csv(paste("./data/kernels/", i, ".csv", sep = "")), as.numeric))      # nolint
     colnames(data) <- c("lag", "IRF_coeff")
     plt <- ggplot(data = data, aes(x = lag, y = IRF_coeff)) +
                 geom_point() +
-                geom_line(linetype = "dashed", color = "red") +
-                xlim(0, max(50, nrow(data))) +
-                labs(title = paste("gridcode", good_locs$index[i]),
-                    subtitle = paste("'kge' :", scores[good_locs$index[i]]))                         # nolint
-    kernels[[i]] <- plt
+                geom_line(linetype = "dashed", color = "#2200ff") +
+                xlim(0, max(30, nrow(data))) +
+                labs(title = paste("gridcode", i),
+                    subtitle = paste("kge :", round(scores[i, "kge"], digits = 4)))                         # nolint
+    kernels[[length(kernels) + 1]] <- plt
 }
 
-## get model performances
-
+## build map
 map <- leaflet()    %>%
     addTiles()      %>%
-    #setView(lat = 54.074372, lng = -104.535173, zoom = 3) %>%
-    addCircleMarkers(data = good_locs,
+    addCircleMarkers(data = good_locs[0:100, ],
                   radius = 1,
-                  group = "pt",
-                  color = ~dryness_pallete(reactivities),
+                  group = "good",
+                  color = colors[0:100],
                   opacity = 1) %>%
-    ## uncomment lines below to show "bad" catchment locations, colored red
-    # addCircleMarkers(data = bad_locs,
-    #              radius = 0.5,
-    #              group = "bad",
-    #              color = "red",
-    #             opacity = 0.2) %>%
-    addPopupGraphs(kernels, group = "pt", width = 300, height = 300)
+    addCircleMarkers(data = bad_locs,
+                 radius = 0.5,
+                 group = "bad",
+                 color = "#323232b7",
+                opacity = 0.2,
+                popup = sapply(bad_locs$index, as.character)) %>%
+    addPopupGraphs(kernels[0:100], group = "good", width = 300, height = 300)
 
 map
