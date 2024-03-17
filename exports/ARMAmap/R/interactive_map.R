@@ -19,17 +19,18 @@ good_locs <- locs[!(locs$index %in% bad), ]
 ## set up kge color-scaling
 ## input x's must be \leq 1
 map_to_colors <- function(x) {
-  # bad values/values less than 0 are assigned "red"
+  # NA values are black
   if (x < 0 || is.na(x) || x == -Inf) {
-    return("ff0000")
+    return("000000")
   }
-  # Values between 0 and 1 are scaled linearly from red to green
+  # values < 0 are red; values in [0, 1] scaled linearly from red to green;
+  # values > 1 are green;
   green <- max(0, min(1, x / 2))
-  return(rgb((0.5 - green) * 7 / 5, green * 11 / 10, 0))                         # nolint
+  return(rgb((1 - green), green, 0))                                        # nolint
 }
 colors <- vector(mode = "character", length = nrow(good_locs))
 scaled_scores <- data.frame(id = scores$id,
-                          score = (scores$kge + (1 - max(scores$kge, na.rm = TRUE))))                       # nolint
+                          score = (scores$kge + 1.2))                       # nolint
 ## build kernel graphs for good catchments
 print("plotting kernels...")
 kernels <- list()
@@ -39,7 +40,7 @@ for (j in seq_len(length(good_locs$index))) {
     colnames(data) <- c("lag", "IRF_coeff")
     plt <- ggplot(data = data, aes(x = lag, y = IRF_coeff)) +
                 geom_point() +
-                geom_line(linetype = "dashed", color = "#2200ff") +
+                geom_line(linetype = "dashed", color = "#2d14d3") +
                 xlim(0, max(30, nrow(data))) +
                 labs(title = paste("gridcode", i),
                     subtitle = paste("kge :", round(scores[scores$id == i, "kge"], digits = 4)))            # nolint
