@@ -1,23 +1,4 @@
-## library checks for running on new machines
-if (system.file(package = "leaflet") == "") {
-  install.packages("leaflet")
-}
-if (system.file(package = "leafpop") == "") {
-  install.packages("leafpop")
-}
-if (system.file(package = "here") == "") {
-  install.packages("here")
-}
-if (system.file(package = "stringr") == "") {
-  install.packages("stringr")
-}
-if (system.file(package = "ggplot2") == "") {
-  install.packages("ggplot2")
-}
-if (system.file(package = "sf") == "") {
-  install.packages("sf")
-}
-
+map <- function() {
 ## load libraries (quietly)
 suppressMessages(require(leaflet))
 suppressMessages(require(leafpop))
@@ -32,7 +13,7 @@ load("./data/bad.Rda")
 load("./data/atlas.Rda")
 
 ## get list of all catchment numbers I have (good) data for
-ids <- scores$id
+ids <- scores$id[scores$kge != -Inf]
 
 ## pre-process data for mapping
 locs <- data.frame(index = atlas$gridcode,
@@ -43,17 +24,19 @@ bad_locs <- locs[locs$index %in% bad, ]
 good_locs <- locs[!(locs$index %in% bad), ]
 
 ## set up kge color-scaling
+## input x's must be \leq 1
 map_to_colors <- function(x) {
-  # Values less than 0 are assigned "red"
-  if (x < 0 || is.na(x)) {
+  # bad values/values less than 0 are assigned "red"
+  if (x < 0 || is.na(x) || x == -Inf) {
     return("ff0000")
   }
   # Values between 0 and 1 are scaled linearly from red to green
   green <- max(0, min(1, x / 2))
-  return(rgb((0.5 - green) * 8 / 5, green * 8 / 5, 0))                         # nolint
+  return(rgb((0.5 - green) * 7 / 5, green * 11 / 10, 0))                         # nolint
 }
 colors <- vector(mode = "character", length = nrow(good_locs))
-
+scaled_scores <- data.frame(id = scores$id,
+                          score = (scores$kge + (1 - max(scores$kge, na.rm = TRUE))))                       # nolint
 ## build kernel graphs for good catchments
 print("plotting kernels...")
 kernels <- list()
@@ -68,26 +51,31 @@ for (j in seq_len(length(good_locs$index))) {
                 labs(title = paste("gridcode", i),
                     subtitle = paste("kge :", round(scores[scores$id == i, "kge"], digits = 4)))            # nolint
     kernels[[j]] <- plt
-    colors[j] <- map_to_colors(scores[scores$id == i, "kge"])
+    colors[j] <- map_to_colors(scaled_scores[scaled_scores$id == i, "score"])                               # nolint
 }
 
-print("building map (this may take ~5 minutes, just wait for the > to appear in the console)...")           # nolint
 ## build map
+t0 <- Sys.time()
+print("building map (this may take ~5 minutes, just wait for the > to appear in the console)...")           # nolint
 suppressMessages(
   map <- leaflet()    %>%
   addTiles()      %>%
+  addCircleMarkers(data = bad_locs,
+                radius = 1,
+                group = "bad",
+                color = "#2f2d2d",
+                opacity = 1,
+                popup = sapply(bad_locs$index, as.character)) %>%
   addCircleMarkers(data = good_locs,
                 radius = 1.2,
                 group = "good",
                 color = colors,
                 opacity = 1) %>%
-  addPopupGraphs(kernels, group = "good", width = 300, height = 300) %>%                                    # nolint
-  addCircleMarkers(data = bad_locs,
-                radius = 1,
-                group = "bad",
-                color = "#ff0000aa",
-                opacity = 1,
-                popup = sapply(bad_locs$index, as.character))
+  addPopupGraphs(kernels, group = "good", width = 300, height = 300)                                       # nolint
 )
+tf <- Sys.time()
+print(paste("elapsed time:", tf - t0))
 
-print("done building map. type 'map' in the console to view.")
+
+return(map)
+}
