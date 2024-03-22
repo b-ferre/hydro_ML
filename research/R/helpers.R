@@ -2,7 +2,7 @@
 ## TODO: implement dependency tags (here and read.csv)
 get_data <- function(catchment_no, old_data = FALSE) {
     if (old_data) {
-    print("warning: old data is being retrieved and presumably used - is this intentional?")
+    print("warning: old data is being retrieved and presumably used - is this intentional?")                                            # nolint
     raw <- read.csv(here("data", "raw_data",
                     paste(catchment_no, ".csv", sep = "")))
     data <- data.frame(
@@ -66,9 +66,9 @@ get_max_practical_lag <- function(catchment_no, old_data = FALSE) {
 }
 
 ## return an IRF model trained on the entire dataset for catchment number i
-irf_i <- function(catchment_no, FD = FALSE, h = NULL, lag = 100) {
-    data <- get_data(catchment_no)
-    mod <- IRF(data$streamflow, data$precip, FD = FD, h = NULL, m = lag, complete = FALSE)
+irf_i <- function(catchment_no, FD = FALSE, h = NULL, lag = 100, old_data = FALSE) {                                                    # nolint
+    data <- get_data(catchment_no, old_data = old_data)
+    mod <- IRF(data$streamflow, data$precip, FD = FD, h = NULL, m = lag, complete = FALSE)                                              # nolint
 
     return(mod)
 }
