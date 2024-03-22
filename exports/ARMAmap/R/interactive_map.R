@@ -1,3 +1,9 @@
+require(leaflet)
+require(leafpop)
+require(ggplot2)
+require(sf)
+require(here)
+
 map <- function() {
 
 ## load data

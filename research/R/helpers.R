@@ -1,17 +1,25 @@
 
 ## TODO: implement dependency tags (here and read.csv)
-get_data <- function(catchment_no) {
+get_data <- function(catchment_no, old_data = FALSE) {
+    if (old_data) {
+    print("warning: old data is being retrieved and presumably used - is this intentional?")
     raw <- read.csv(here("data", "raw_data",
                     paste(catchment_no, ".csv", sep = "")))
-
     data <- data.frame(
         date = as.Date(raw$Month, raw$Day, raw$Year, format = "%m.%d.%Y"),
         precip = raw$"Forcing_Precipitation_mm.d",
         snowmelt = raw$"HBV_Snowmelt_mm.d",
         streamflow = raw$"Observed_Streamflow_mm.d"
     )
-
     return(data)
+    } else {
+        raw <- read.csv(here("research", "data", "new_data", "raw_data",
+                        "by_catchment", paste(catchment_no, ".csv", sep = ""))) 
+        data <- data.frame(
+        date = raw$date,
+        precip = raw$precipitation_mmd,
+        streamflow = raw$streamflow_mmd)
+    }
 }
 
 ## the goal of this function is to (somewhat heuristically) test the maximum
@@ -20,12 +28,13 @@ get_data <- function(catchment_no) {
 ## (and complete = TRUE)
 find_max_practical_lag <- function(catchment_no,
                                    max_considered = 100,
-                                   first_diff = FALSE) {
+                                   first_diff = TRUE,
+                                   old_data = FALSE) {
     # minimum lag to test is set at 5 to avoid numerical errors later on
     max_practical_lag <- 5
 
     # get data
-    data <- get_data(catchment_no)
+    data <- get_data(catchment_no, old_data = old_data)
 
     # iterate through lags to check, training a
     for (lag in 10:max_considered) {
@@ -39,30 +48,22 @@ find_max_practical_lag <- function(catchment_no,
         }
     }
 
-    print(paste("finished testing catchment ",
-                catchment_no,
-                "... max practical lag: ",
-                max_practical_lag, sep = ""))
+    # print(paste("finished testing catchment ",
+    #             catchment_no,
+    #             "... max practical lag: ",
+    #             max_practical_lag, sep = ""))
     return(max_practical_lag)
 }
 
-get_max_practical_lag <- function(catchment_no) {
-    load("./data/results/arma_model/max_FD_lags.Rda")
-    return(max_practical_lags[max_practical_lags$catchment_no == catchment_no, "max_practical_lag"])                                    # nolint
+get_max_practical_lag <- function(catchment_no, old_data = FALSE) {
+    if (old_data) {
+        load("./research/data/old_data/results/arma_model/max_FD_lags.Rda")
+        return(max_practical_lags[max_practical_lags$catchment_no == catchment_no, "max_practical_lag"])                                # nolint
+    } else {
+        load("./research/data/new_data/results/arma_model/max_FD_lags.Rda")
+        return(max_practical_lags[max_practical_lags$catchment_no == catchment_no, "max_practical_lag"])                                # nolint
+    }
 }
-
-get_learnability <- function(catchment_no) {
-    ## perfect score (1.0) means that every single day in the time series has
-    ## both target and input datapoints. otherwise I just calculate the percent
-    ## of days that have sufficient data
-    data <- get_data(catchment_no)
-
-    input_density <- length(data$precip[!(is.na(data$precip) | is.nan(data$precip))]) / length(data$precip)                             # nolint
-    target_density <- length(data$streamflow[!(is.na(data$streamflow) | is.nan(data$streamflow))]) / length(data$streamflow)            # nolint
-
-    return((0.5 * input_density) + (0.5 * target_density))
-}
-
 
 ## return an IRF model trained on the entire dataset for catchment number i
 irf_i <- function(catchment_no, FD = FALSE, h = NULL, lag = 100) {

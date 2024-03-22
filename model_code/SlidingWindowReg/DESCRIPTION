@@ -1,0 +1,41 @@
+Type: Package
+Package: SlidingWindowReg
+Title: Gaussian Sliding Windows Regression
+Version: 0.1.1
+Authors@R: 
+    person("Stefan", "Schrunner", , "stefan.schrunner@nmbu.no", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-1327-4855"))
+Description: A Sliding Windows Regression model with parameterized
+    Gaussian kernels as weights for hydrological inference. The package is
+    currently under development.
+License: GPL-3
+URL: https://sschrunner.github.io/SlidingWindowReg/
+Depends: 
+    R (>= 3.5.0)
+Imports:
+    combinat,
+    dplyr,
+    ggplot2,
+    hydroGOF,
+    knitr,
+    lifecycle,
+    methods,
+    nloptr,
+    parallel,
+    pbapply,
+    rdist,
+    Rdpack (>= 0.7),
+    stats
+Suggests:
+    lubridate,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: 
+    knitr
+RdMacros:
+    Rdpack
+Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
