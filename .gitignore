@@ -5,3 +5,4 @@ research/hflm-ds_model/slapdash_test/data/*
 research/hflm-ds_model/slapdash_test/results/*
 exports/*
 .vscode/*
+research/archive/*
