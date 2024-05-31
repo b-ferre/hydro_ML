@@ -1,0 +1,7 @@
+Sync/*
+research/kirschner_ar_model/data/*
+research/kirschner_ar_model/FD_kernels/*
+research/hflm-ds_model/slapdash_test/data/*
+research/hflm-ds_model/slapdash_test/results/*
+exports/*
+.vscode/*
