@@ -159,5 +159,5 @@ for (i in i0:(i0 + 4)) {
   try({
     r2 <- slapdash_test(gridcode)
     save(r2, file = paste0("results/r2_scores/grid", gridcode, "_r2.rda"))
-  }, silent = TRUE)
+  }, silent = FALSE)
 }

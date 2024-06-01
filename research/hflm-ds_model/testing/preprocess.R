@@ -57,3 +57,11 @@ for (i in 1:n) {
 }
 
 save(snow_dominated, file = "./snow_dom.rda")
+
+extract_numbers <- function(filename) {
+    return(as.integer(str_remove_all(filename, "[^\\d]")))
+}
+
+min2_div10 <- function(num) {
+    return(as.integer((num - 2) / 10))
+}
