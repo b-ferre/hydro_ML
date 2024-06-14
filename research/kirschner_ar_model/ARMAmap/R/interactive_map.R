@@ -40,7 +40,7 @@ map <- function() {
     }
     # values < 0 are red; values in [0, 1] scaled linearly from red to green;
     # values > 1 are green;
-    green <- max(0, min(1, x / 2))
+    green <- max(0, min(1, x / )
     return(rgb((1 - green), green, 0))                                                                            # nolint
   }
   colors <- vector(mode = "character", length = nrow(good_locs))

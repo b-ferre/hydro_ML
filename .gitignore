@@ -1,8 +1,10 @@
 Sync/*
 .vscode/*
-research/archive/*
-research/kirschner_ar_model/data/*
-research/kirschner_ar_model/ARMAmap/data*
 research/kirschner_ar_model/FD_kernels/*
-research/hflm-ds_model/slapdash_test/data/*
-research/hflm-ds_model/slapdash_test/results/*
+research/hflm-ds_model/data/*
+research/hflm-ds_model/basic_testing/results/plots/*
+research/hflm-ds_model/basic_testing/results/raw_estimates/*
+research/hflm-ds_model/basic_testing/results/raw_scores/*
+research/hflm-ds_model/climate_testing/results/*
+research/hflm-ds_model/mapping/index.html
+research/hflm-ds_model/mapping/data/*
