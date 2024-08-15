@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH  --account=def-aliameli
-#SBATCH  --time=180:00
-#SBATCH  --mem-per-cpu=500G
-#SBATCH  --cpus-per-task=1
-#SBATCH  --job-name='clustering'
+#SBATCH  --time=30:00
+#SBATCH  --cpus-per-task=10
+#SBATCH  --mem=300G
+#SBATCH  --job-name='clustering_test'
 
 module load StdEnv/2023 r/4.4.0
 Rscript ./clustering.R

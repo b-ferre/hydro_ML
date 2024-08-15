@@ -8,3 +8,5 @@ research/hflm-ds_model/basic_testing/results/raw_scores/*
 research/hflm-ds_model/climate_testing/results/*
 research/hflm-ds_model/mapping/index.html
 research/hflm-ds_model/mapping/data/*
+seasonality_testing/data/ppdorm_data/*
+seasonality_testing/data/ppgrow_data/*
